@@ -85,6 +85,107 @@ def extract_structured_data(text):
     except Exception as e:
         return {"error": str(e)}
 
+# 🔥 INSIGHT GENERATION
+def generate_insights(data):
+    insights = []
+
+    lab_values = data.get("lab_test_values", [])
+
+    low_params = []
+    high_params = []
+
+    for item in lab_values:
+        if item.get("status") == "Low":
+            low_params.append(item["name"])
+        elif item.get("status") == "High":
+            high_params.append(item["name"])
+
+    if low_params:
+        insights.append(f"Some parameters are lower than normal: {', '.join(low_params[:5])}")
+
+    if high_params:
+        insights.append(f"Some parameters are higher than normal: {', '.join(high_params[:5])}")
+
+    blood_markers = ["Hemoglobin", "RBC", "HCT", "MCV", "MCH"]
+    low_blood = [p for p in blood_markers if p in low_params]
+
+    if len(low_blood) >= 2:
+        insights.append("Multiple blood-related parameters are low, which may indicate anemia or related conditions.")
+
+    inflammation_markers = [
+        "High sensitivity CRP",
+        "Erythrocyte Sedimentation Rate"
+    ]
+    high_inflammation = [p for p in inflammation_markers if p in high_params]
+
+    if high_inflammation:
+        insights.append("Inflammation markers are elevated, which may indicate inflammation or infection.")
+
+    return insights
+
+# 🔥 EXPLANATION GENERATION - LLM Powered
+def generate_explanation(structured_data, insights):
+    prompt = f"""
+    You are a medical assistant.
+
+    Based ONLY on the provided data and insights:
+        - Do NOT infer conditions unless clearly supported by multiple abnormal markers
+        - If a value is within normal range, DO NOT describe it as a problem
+        - Avoid alarming language
+        - Explain in simple, human-friendly language what it means.
+        - Keep it Short, Clear, Non-alarming and Easy to understand
+
+    IMPORTANT:
+    - Order the explanations by PRIORITY
+    - Most critical health concern FIRST
+    - Less important observations later
+    - GROUP related abnormalities into ONE explanation
+    - Focus on overall patterns, not individual values
+    - Prioritize based on severity and number of abnormal related markers
+
+    Rules:
+    - Do NOT create separate points for related parameters
+    - Do NOT repeat similar explanations
+    - Do NOT mention normal values as abnormal
+    - Do NOT say things like "kidney issue" or another condition unless clearly abnormal, and supported by multiple related markers
+    - Return ONLY a JSON array (list of strings)
+    - Each point must be short (1 line)
+    - No headings, no bullets, no markdown
+    - No extra text
+
+    Structured Data:
+    {structured_data}
+
+    Insights:
+    {insights}
+
+    Return as a list of explanations.
+    """
+
+    try:
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+
+        content = response.choices[0].message.content.strip()
+
+        # 🔥 Clean markdown if present
+        content = content.replace("```json", "").replace("```", "").strip()
+
+        # 🔥 Parse JSON safely
+        parsed = json.loads(content)
+
+        # 🔥 Handle case where it's still a string
+        if isinstance(parsed, str):
+            parsed = json.loads(parsed)
+
+        return parsed
+
+    except Exception as e:
+        return {"error": f"Explanation parsing failed: {str(e)}", "raw": content}
+
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
@@ -109,8 +210,13 @@ async def upload_file(file: UploadFile = File(...)):
 
     # 🔥 CALL LLM
     structured = extract_structured_data(text[:3000])  # limit size
+    insights = generate_insights(structured)
+    explanation = generate_explanation(structured, insights)
 
     return {
         "filename": file.filename,
-        "structured_data": structured
+        "structured_data": structured,
+        "insights": insights,
+        "explanation": explanation
     }
+
