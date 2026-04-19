@@ -148,10 +148,17 @@ def generate_explanation(structured_data, insights):
     - Do NOT repeat similar explanations
     - Do NOT mention normal values as abnormal
     - Do NOT say things like "kidney issue" or another condition unless clearly abnormal, and supported by multiple related markers
+    - Clearly mention key parameters when forming explanations (e.g., hemoglobin, MCV, MCH)
     - Return ONLY a JSON array (list of strings)
     - Each point must be short (1 line)
     - No headings, no bullets, no markdown
     - No extra text
+
+    Also include 1–2 additional general health observations if relevant ONLY:
+    - These should be SAFE and based on available data
+    - Do NOT introduce new diseases or conditions without clear evidence
+    - Include 1 actionable recommendation if relevant (e.g., follow-up with doctor)
+    - Avoid generic lifestyle advice unless directly relevant to the findings
 
     Structured Data:
     {structured_data}
