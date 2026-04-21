@@ -6,7 +6,16 @@ from backend.services.explanation_service import generate_explanation
 from backend.services.risk_service import generate_risk
 from backend.utils.parser import extract_text
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # for dev
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")

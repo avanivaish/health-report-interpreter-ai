@@ -1,0 +1,69 @@
+<div class="hero">
+
+  <h1>🧠 Health Report AI</h1>
+  <p class="subtitle">Upload your lab report and get instant AI-powered insights</p>
+
+  <!-- 🔥 Drag & Drop Upload Box -->
+  <div class="upload-area"
+       (dragover)="onDragOver($event)"
+       (drop)="onDrop($event)">
+
+    <p class="upload-text">📁 Drag & Drop your report here</p>
+    <p class="upload-sub">or</p>
+
+    <!-- hidden file input -->
+    <input type="file"
+           #fileInput
+           (change)="onFileSelected($event)"
+           hidden />
+
+    <button (click)="fileInput.click()">Browse File</button>
+
+    <!-- selected file name -->
+    <p *ngIf="file" class="file-name">
+      Selected: {{ file.name }}
+    </p>
+
+  </div>
+
+  <!-- Analyze button -->
+  <button class="analyze-btn"
+          (click)="upload()"
+          [disabled]="!file || loading">
+    {{ loading ? 'Processing...' : 'Analyze Report' }}
+  </button>
+
+  <p *ngIf="loading" class="loading-text">
+    Analyzing your report...
+  </p>
+
+</div>
+
+
+<!-- 🔽 Results Section -->
+<div class="container" *ngIf="result">
+
+  <div class="card">
+    <h2>📊 Insights</h2>
+    <ul>
+      <li *ngFor="let i of result?.insights || []">{{ i }}</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🧠 Explanation</h2>
+    <ul>
+      <li *ngFor="let e of result?.explanation || []">{{ e }}</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>⚠️ Risk Level</h2>
+
+    <span class="risk-badge"
+          [ngClass]="result?.risk_level?.toLowerCase()">
+      {{ result?.risk_level }}
+    </span>
+  </div>
+
+</div>
