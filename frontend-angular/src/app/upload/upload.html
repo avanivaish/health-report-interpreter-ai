@@ -39,9 +39,112 @@
 
 </div>
 
+<!-- 🔍 Search & Filter -->
+<div class="container history-section" *ngIf="history.length">
+  <div class="filters">
+    <input 
+      type="text" 
+      placeholder="🔍 Search by filename..." 
+      [(ngModel)]="searchQuery"
+      (ngModelChange)="onSearchChange()"
+      class="search-input"
+    />
+    <select 
+      [(ngModel)]="selectedRisk"
+      (ngModelChange)="onRiskFilterChange()"
+      class="filter-select"
+    >
+      <option value="">All Risk Levels</option>
+      <option value="Low">Low</option>
+      <option value="Mild">Mild</option>
+      <option value="Moderate">Moderate</option>
+      <option value="High">High</option>
+    </select>
+  </div>
 
-<!-- 🔽 Results Section -->
-<div class="container" *ngIf="result">
+  <!-- 📋 History List -->
+  <div class="card">
+    <h2>🕐 Recent Reports</h2>
+    <ul>
+      <li *ngFor="let item of history" 
+          class="history-item"
+          [class.selected]="isSelected(item.id)"
+          (click)="viewReport(item.id)">
+        <div class="history-content">
+          <strong>{{ item.filename }}</strong>
+          <div class="history-meta">
+            {{ item.created_at | date:'medium' }} · Risk: {{ item.result?.risk_level || 'Unknown' }}
+          </div>
+        </div>
+        <div class="history-actions" (click)="$event.stopPropagation()">
+          <button 
+            class="action-btn compare-btn"
+            (click)="toggleCompare(item.id, $event)"
+            [class.active]="isSelected(item.id)"
+            data-tooltip="Compare reports">
+            ⚖️
+          </button>
+          <button 
+            class="action-btn export-btn"
+            (click)="exportReport(item.id, 'json', $event)"
+            data-tooltip="Export as JSON">
+            💾
+          </button>
+          <button 
+            class="action-btn export-btn"
+            (click)="exportReport(item.id, 'pdf', $event)"
+            data-tooltip="Export as PDF">
+            📄
+          </button>
+          <button 
+            class="action-btn delete-btn"
+            (click)="deleteReport(item.id, $event)"
+            data-tooltip="Delete report">
+            🗑️
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- 🔄 Compare View -->
+<div class="container compare-view" *ngIf="compare1 && compare2">
+  <button class="close-compare" (click)="closeCompare()">✕ Close Comparison</button>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <h3>{{ compare1.filename }}</h3>
+      <div class="compare-content">
+        <div class="compare-section">
+          <strong>Risk:</strong> {{ compare1.result?.risk_level }}
+        </div>
+        <div class="compare-section">
+          <strong>Insights:</strong>
+          <ul>
+            <li *ngFor="let insight of compare1.result?.insights">{{ insight }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="compare-col">
+      <h3>{{ compare2.filename }}</h3>
+      <div class="compare-content">
+        <div class="compare-section">
+          <strong>Risk:</strong> {{ compare2.result?.risk_level }}
+        </div>
+        <div class="compare-section">
+          <strong>Insights:</strong>
+          <ul>
+            <li *ngFor="let insight of compare2.result?.insights">{{ insight }}</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 📊 Results Section -->
+<div class="container" *ngIf="result && !compare1">
 
   <div class="card">
     <h2>📊 Insights</h2>

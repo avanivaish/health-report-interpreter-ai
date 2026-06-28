@@ -1,15 +1,55 @@
-# Python
-__pycache__/
-*.pyc
-
 # Environment variables
 .env
+.env.local
+.env.*.local
 
-# Node (future frontend)
+# PDFs and generated files
+*.pdf
+*.json.bak
+backend/data/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Node/Angular
 node_modules/
+angular.json.bak
+.angular/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # OS files
 .DS_Store
+Thumbs.db
 
 # Temp files
 temp.pdf
+temp/
+*.tmp
