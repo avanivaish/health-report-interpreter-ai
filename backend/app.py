@@ -1,12 +1,18 @@
+from pathlib import Path
+import sys
+
 from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from backend.services.llm_service import extract_structured_data
 from backend.services.insight_service import generate_insights
 from backend.services.explanation_service import generate_explanation
 from backend.services.risk_service import generate_risk
 from backend.utils.parser import extract_text
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 app.add_middleware(
